@@ -1,0 +1,21 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "main": "generate_sample_data.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "csv-parse": "^7.0.1",
+    "csv-stringify": "^6.8.1",
+    "ml-cart": "^2.1.1",
+    "ml-knn": "^3.0.0",
+    "ml-logistic-regression": "^2.0.0",
+    "ml-matrix": "^6.13.0",
+    "simple-statistics": "^7.9.3"
+  }
+}
