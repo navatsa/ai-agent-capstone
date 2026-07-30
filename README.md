@@ -44,6 +44,11 @@ capstone/
 │   ├── eda_report.ipynb       <- Assignment 20.1 deliverable (this report)
 │   ├── capstone_analysis.ipynb<- extended cohort / time-series / modeling analysis
 │   └── generate_sample_data.py
+├── models/
+│   └── sla_met_logreg_balanced.joblib  <- persisted best model (Sec. 7 of eda_report.ipynb)
+├── api/
+│   ├── main.py                <- FastAPI service serving the persisted model
+│   └── requirements.txt
 └── src/
     ├── data_loader.js
     ├── cohort_analysis.js
@@ -54,10 +59,40 @@ capstone/
 
 3 --> How to Run
 
+**Notebook / EDA report:**
 ```bash
 cd notebooks
 jupyter nbconvert --to notebook --execute --inplace eda_report.ipynb
 # or open eda_report.ipynb directly in Jupyter / VS Code
 ```
 
-Requires: `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`.
+Requires: `pandas`, `numpy`, `matplotlib`, `seaborn`, `scikit-learn`, `joblib`.
+
+**Prediction API:**
+
+Running the notebook's "Model Persistence" section (Sec. 7) saves the best
+model to `models/sla_met_logreg_balanced.joblib`. Once that file exists, serve
+it via FastAPI:
+
+```bash
+cd api
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+Then open `http://127.0.0.1:8000/docs` for interactive Swagger UI, or call it
+directly:
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+        "severity": "Sev-C", "product_area": "Networking",
+        "issue_type": "Configuration", "complexity": "Medium",
+        "effort_level": "High", "has_agent": true,
+        "sla_target_days": 12, "engineer_workload": 20,
+        "queue_depth": 44, "kb_coverage_score": 0.89, "num_actions": 8
+      }'
+```
+
+`GET /health` reports whether the model loaded successfully.
