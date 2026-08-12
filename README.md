@@ -45,7 +45,10 @@ capstone/
 │   ├── capstone_analysis.ipynb<- extended cohort / time-series / modeling analysis
 │   └── generate_sample_data.py
 ├── models/
-│   └── sla_met_logreg_balanced.joblib  <- persisted best model (Sec. 7 of eda_report.ipynb)
+│   ├── sla_met_logreg_balanced.joblib      <- persisted best model (Sec. 7 of eda_report.ipynb)
+│   ├── sla_met_knn.joblib                  <- persisted KNN (k=5) model (Sec. 7.1)
+│   ├── sla_met_decision_tree_balanced.joblib <- persisted Decision Tree (balanced) model (Sec. 7.1)
+│   └── sla_met_random_forest_balanced.joblib <- persisted Random Forest (balanced) model (Sec. 7.1)
 ├── api/
 │   ├── main.py                <- FastAPI service serving the persisted model
 │   └── requirements.txt
