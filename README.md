@@ -1,5 +1,8 @@
 # AI/Automation Agents & Support Case Outcomes — Capstone Final Report
 
+**Nancy Vatsa** · [nancy.vatsa@gmail.com](mailto:nancy.vatsa@gmail.com) · [GitHub](https://github.com/navatsa) · [LinkedIn](https://linkedin.com/in/nancy-vatsa-881727122)
+
+
 **Jupyter Notebooks:** [`notebooks/eda_report.ipynb`](notebooks/eda_report.ipynb) (primary technical analysis) · [`notebooks/capstone_analysis.ipynb`](notebooks/capstone_analysis.ipynb) (cohort, time-series & modeling deep dive)
 
 ## Executive Summary (for a non-technical reader)
@@ -37,6 +40,19 @@ contractual penalties, and rework — so a reliable early-warning signal is
 directly actionable. The goal of this project is to quantify the agent
 effect and to build a classifier that predicts `sla_met` (whether a case
 closes within its SLA target) from information known at case-open time.
+
+### Rationale
+
+Missed SLAs are not a cosmetic metric — they carry direct financial and
+reputational cost: contractual penalty clauses, refunds/credits, higher
+customer churn, and escalations that consume disproportionate engineer time.
+As support volumes grow and organizations lean more heavily on AI/automation
+agents to triage and resolve cases, two questions become operationally
+urgent: are these agents actually helping, and can "at risk" cases be
+caught *before* they breach their deadline rather than after? A model that
+flags likely-to-miss cases at intake turns SLA management from a reactive,
+after-the-fact reporting exercise into a proactive staffing/escalation
+decision, which is the practical motivation for this project.
 
 ## 2. Model Outcomes or Predictions
 
@@ -95,12 +111,12 @@ Four classifiers were trained on the same preprocessed features to predict
 each compared with and without `class_weight="balanced"` (KNN excepted,
 which has no such parameter) to address the ~65/35 class imbalance. All
 models were wrapped in a single `sklearn` `Pipeline` (preprocessing +
-classifier) to prevent data leakage between train and test folds. The two
-strongest families (Logistic Regression and Random Forest, both balanced)
-were then tuned with **`GridSearchCV` over 5-fold stratified
-cross-validation**, searching Logistic Regression's regularization strength
-(`C`) and Random Forest's `n_estimators`, `max_depth`, and
-`min_samples_leaf`.
+classifier) to prevent data leakage between train and test folds. **All four
+model families** were then tuned with **`GridSearchCV` over 5-fold
+stratified cross-validation**: KNN's `n_neighbors`/`weights`, Decision
+Tree's `criterion`/`max_depth`/`min_samples_leaf`, Logistic Regression's
+regularization strength (`C`), and Random Forest's `n_estimators`,
+`max_depth`, and `min_samples_leaf`.
 
 ## 6. Model Evaluation
 
@@ -113,25 +129,36 @@ to balance catching true SLA-met cases (recall) against not over-predicting
 them (precision), which is the more honest measure of a genuinely useful
 classifier here.
 
-| Model | Precision | Recall | F1 |
-|---|---|---|---|
-| Majority-class baseline (Dummy) | 0.000 | 0.000 | 0.000 |
-| Logistic Regression (balanced) | — | — | **~0.773 (best)** |
-| Random Forest (balanced) | 0.699 | 0.819 | 0.754 |
-| Decision Tree (balanced) | 0.636 | 0.667 | 0.651 |
-| KNN (k=5) | 0.351 | 0.257 | 0.297 |
+| Model (tuned) | CV F1 | Test Precision | Test Recall | Test F1 |
+|---|---|---|---|---|
+| Majority-class baseline (Dummy) | — | 0.000 | 0.000 | 0.000 |
+| **Logistic Regression (balanced)** | **0.775** | 0.721 | 0.838 | **0.775 (best)** |
+| Random Forest (balanced) | 0.775 | 0.672 | 0.838 | 0.746 |
+| Decision Tree (balanced) | 0.755 | 0.667 | 0.819 | 0.735 |
+| KNN | 0.313 | 0.359 | 0.267 | 0.306 |
 
-5-fold cross-validated `GridSearchCV` tuning did **not** meaningfully beat
-the untuned balanced models above (best cross-validated F1 ≈ 0.775 for both
-Logistic Regression and Random Forest), confirming the Section-6 comparison
-wasn't a fluke of one particular train/test split. **Logistic Regression
-(balanced) was selected as the final model** — it matches the tuned Random
-Forest on F1 while being simpler, faster to retrain, and directly
-interpretable via its coefficients (important when a support manager asks
-*why* a case was flagged). It is persisted to
-`models/sla_met_logreg_balanced.joblib`; the other three candidates (KNN,
-Decision Tree, Random Forest) are also persisted alongside it for future
-comparison or swapping (see [Repository Layout](#repository-layout)).
+![Tuned model comparison](reports/images/tuned_model_comparison.png)
+
+![Confusion matrices for all four tuned models](reports/images/confusion_matrices_tuned_models.png)
+
+5-fold cross-validated `GridSearchCV` tuning was run for **all four**
+candidate model families. **KNN underperforms regardless of tuning** — its
+distance-based similarity doesn't capture this mostly-categorical feature
+space well. Decision Tree improves substantially once tuned (CV F1 ≈ 0.755
+vs. ≈0.65 untuned), but **Logistic Regression and Random Forest remain tied
+for best at CV F1 ≈ 0.775**, each close to their untuned test F1 from the
+initial comparison — confirming those results weren't a fluke of one
+particular train/test split. **Logistic Regression (balanced) was selected
+as the final model** — it matches the tuned Random Forest on F1 while being
+simpler, faster to retrain, and directly interpretable via its coefficients
+(important when a support manager asks *why* a case was flagged):
+
+![Top Logistic Regression coefficients](reports/images/logreg_top_coefficients.png)
+
+It is persisted to `models/sla_met_logreg_balanced.joblib`; the other three
+candidates (KNN, Decision Tree, Random Forest) are also persisted alongside
+it for future comparison or swapping (see [Repository Layout](#repository-layout)).
+
 
 ---
 
@@ -244,3 +271,15 @@ curl -X POST http://127.0.0.1:8000/predict \
 ```
 
 `GET /health` reports whether the model loaded successfully.
+
+---
+
+## Contact and Further Information
+
+**Nancy Vatsa**
+
+Email: [nancy.vatsa@gmail.com](mailto:nancy.vatsa@gmail.com)
+
+GitHub: [github.com/navatsa](https://github.com/navatsa)
+
+LinkedIn: [linkedin.com/in/nancy-vatsa-881727122](https://linkedin.com/in/nancy-vatsa-881727122)
